@@ -1,0 +1,9 @@
+{
+    "db":{
+        "user":"ash",
+        "pwd":"ash",
+        "host":"localhost",
+        "port":"27017",
+        "name":"blogs"
+    }
+}

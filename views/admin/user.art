@@ -1,0 +1,113 @@
+{{extend './common/layout.art'}}
+{{block 'main'}}
+	<!-- 头部，可以使用相对路径，因为是模板引擎而不是浏览器解析路径 -->
+    {{include './common/header.art'}}
+    <!-- /头部 -->
+    <!-- 主体内容 -->
+    <div class="content">
+        {{include './common/aside.art'}}
+        <!-- 侧边栏 -->
+        <div class="main">
+        	<!-- 分类标题 -->
+            <div class="title">
+                <h4>用户</h4>
+                <span>找到1个用户</span>
+                <!-- 使用id属性作为查询参数来区别是新增用户页面还是修改页面，如果是新增用户页面，则不传入id -->
+                <a href="/admin/user-edit" class="btn btn-primary new">新增用户</a>
+            </div>
+            <!-- /分类标题 -->
+            <!-- 内容列表 -->
+            <table class="table table-striped table-bordered table-hover custom-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>用户名</th>
+                        <th>邮箱</th>
+                        <th>角色</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{each user}}
+                    <tr>
+                        <td>{{@$value._id}}</td>
+                        <td>{{$value.username}}</td>
+                        <td>{{$value.email}}</td>
+                        <td>{{$value.role == 'admin'?'超级管理员':"普通用户"}}</td>
+                        <td>{{$value.state == 0?'启用':'禁用'}}</td>
+                        <td>
+                            <!-- 如果是跳转，则应该传入id -->
+                            <a href="/admin/user-edit?id={{@$value._id}}" class="glyphicon glyphicon-edit"></a>
+                            <!-- 如果是删除，则id则作为被删除用户的标识 -->
+                            <i class="glyphicon glyphicon-remove delete" data-toggle="modal" data-target=".confirm-modal" data-id="{{@$value._id}}"></i>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+            <!-- /内容列表 -->
+            <!-- 分页 -->
+            <ul class="pagination">
+                <!-- 是否显示上一页，判断条件为page值小于等于1时，则不再显示上一页 -->
+                <li style="display:<%=page<=1?'none':'inline' %>">
+                    <!-- 点击上一页时，page值减1 -->
+                    <a href="/admin/user?page=<%=page-1 %>">
+			        <span>&laquo;</span>
+			      </a>
+                </li>
+
+                <!-- 显示页数，page从1开始到total -->
+                <% for (var i = 0;i < total;i++) { %>
+                <li><a href="/admin/user?page=<%=i+1 %>">{{i + 1}}</a></li>
+                <% } %>
+
+                <!-- 是否显示上一页，判断条件为page值等于total时，则不再显示下一页 -->
+                <li style="display: <%=page >= total? 'none': 'inline' %>">
+                    <a href="/admin/user?page=<%=page+1 %>">
+			        <span>&raquo;</span>
+			      </a>
+                </li>
+            </ul>
+            <!-- /分页 -->
+        </div>
+    </div>
+    <!-- /主体内容 -->
+    <!-- 删除确认弹出框 -->
+    <div class="modal fade confirm-modal">
+        <div class="modal-dialog modal-lg">
+            <form class="modal-content"  action="/admin/delete" method="get">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    <h4 class="modal-title">请确认</h4>
+                </div>
+                <div class="modal-body">
+                    <p>您确定要删除这个用户吗?</p>
+                    <input type="hidden" name="id" id="deleteUserId">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <input type="submit" class="btn btn-primary">
+                </div>
+            </form>
+        </div>
+    </div>
+
+{{/block}}
+
+{{block 'script'}}
+    <script>
+        //注意页面不止一个用户信息，也就是有多个class类名为delete，所以必须使用document.querySelectorAll，否则永远只删除第一个用户
+        var del = document.querySelectorAll('.delete');
+        //获取隐藏域
+        var userId = document.querySelector('#deleteUserId');
+        for(let i = 0;i < del.length;i++){
+            del[i].addEventListener('click',function(){
+                //获取被删除用户的id，该id事先存放在data-id中
+                let id = this.getAttribute('data-id');
+                //将用户id赋值给隐藏域
+                userId.value = id; 
+            })
+        }
+    </script>
+{{/block}}
